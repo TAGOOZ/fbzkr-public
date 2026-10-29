@@ -1,0 +1,12 @@
+# Credentials — never commit. Restored from the FB_COOKIES_B64 secret at runtime.
+cookies.pkl
+
+# Local debug output (a logged-in page snapshot is a session leak)
+debug.png
+debug_page_source.html
+
+# Local only
+.venv/
+__pycache__/
+*.bak
+.heartbeat

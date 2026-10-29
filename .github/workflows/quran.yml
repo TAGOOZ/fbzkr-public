@@ -1,0 +1,50 @@
+name: Send Quran Verse
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 0,8,18 * * *'
+
+concurrency:
+  group: fb-session
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  run-script:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+          cache: pip
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq xvfb
+
+      - name: Install Python dependencies
+        run: pip install -r requirements.txt
+
+      - name: Restore Facebook session
+        env:
+          FB_COOKIES_B64: ${{ secrets.FB_COOKIES_B64 }}
+        run: |
+          if [ -z "$FB_COOKIES_B64" ]; then
+            echo "FB_COOKIES_B64 secret is not set" >&2
+            exit 1
+          fi
+          printf '%s' "$FB_COOKIES_B64" | base64 -d > cookies.pkl
+
+      - name: Run Python script
+        run: |
+          sudo Xvfb :99 -ac &
+          export DISPLAY=:99
+          python quran.py
